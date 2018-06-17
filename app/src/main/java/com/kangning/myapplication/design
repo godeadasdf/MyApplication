@@ -1,0 +1,29 @@
+Recoverable{
+ var Map<String,Content>  argName Content
+}
+
+data class Content <T>(
+    type
+    content:T,
+    class:Clazz
+)
+
+sealed class RecoveryType{
+JustRecord
+ForRecovery
+}
+
+annotation class Registry
+{
+     widgetName:String
+        widgetClass:Clazz
+
+}
+
+
+Room {
+className Map<String,Content> jsonString
+}
+
+Recovery
+
