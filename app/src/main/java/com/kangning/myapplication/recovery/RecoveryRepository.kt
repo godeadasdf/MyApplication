@@ -17,7 +17,7 @@ class RecoveryRepository {
 //        mAllWords = mRecoveryDao.getAllWords()
     }
 
-    fun getRecoveryItem(className: String): RecoveryEntity {
+    fun getRecoveryItem(className: String):RecoveryEntity {
         return mRecoveryDao.getRecovery(className)
     }
 
