@@ -7,5 +7,5 @@ import android.arch.persistence.room.PrimaryKey
 @Entity(tableName = "recovery_table")
 class RecoveryEntity(
         @PrimaryKey
-        val className: String,
+        val classIdentity: String,
         val jsonString: String)

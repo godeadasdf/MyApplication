@@ -13,10 +13,10 @@ import kotlin.reflect.jvm.isAccessible
 
 object RecoveryWorker {
 
-    fun recover(activity: Activity, func: () -> Unit) {
+    fun recover(activity: Activity, identity: String = "", func: () -> Unit) {
         launch(CommonPool) {
             val content = RecoveryRepository(activity.application).getRecoveryItem(
-                    activity::class.qualifiedName!!
+                    activity::class.qualifiedName!! + identity
             )
             if (content != null) {
                 val clazz = activity::class
@@ -53,26 +53,26 @@ object RecoveryWorker {
                 }
 
                 RecoveryRepository(activity.application).deleteRecoveryItem(
-                        activity::class.qualifiedName!!)
+                        activity::class.qualifiedName!! + identity)
 
             }
 
         }
     }
 
-    fun save(activity: Activity) {
+    fun save(activity: Activity, identity: String = "") {
         launch(CommonPool) {
             RecoveryRepository(activity.application).insert(
-                    RecoveryEntity(activity::class.qualifiedName!!,
+                    RecoveryEntity(activity::class.qualifiedName!! + identity,
                             generateJson(activity)
                     )
             )
         }
     }
 
-    fun check(activity: Activity, className: String, func: (Boolean) -> Unit) {
+    fun check(activity: Activity, classIdentity: String, func: (Boolean) -> Unit) {
         launch(CommonPool) {
-            val recoverable = RecoveryRepository(activity.application).getRecoveryItem(className) != null
+            val recoverable = RecoveryRepository(activity.application).getRecoveryItem(classIdentity) != null
             withContext(UI) {
                 func(recoverable)
             }

@@ -14,9 +14,9 @@ interface RecoveryDao {
     @Query("DELETE FROM recovery_table")
     fun deleteAll()
 
-    @Query("SELECT * from recovery_table WHERE className = :className")
-    fun getRecovery(className: String): RecoveryEntity
+    @Query("SELECT * from recovery_table WHERE classIdentity = :classIdentity")
+    fun getRecovery(classIdentity: String): RecoveryEntity
 
-    @Query("DELETE FROM recovery_table WHERE className = :className")
-    fun deleteRecovery(className: String)
+    @Query("DELETE FROM recovery_table WHERE classIdentity = :classIdentity")
+    fun deleteRecovery(classIdentity: String)
 }

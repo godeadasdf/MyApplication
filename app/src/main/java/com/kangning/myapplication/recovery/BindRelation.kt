@@ -1,6 +1,5 @@
 package com.kangning.myapplication.recovery
 
-import android.view.View
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.PROPERTY)
@@ -15,8 +14,3 @@ annotation class BindRelation(
 enum class TYPE {
     SINGLE, LIST
 }
-
-
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.RUNTIME) //这一行也可以省略
-annotation class Value(val value: String)

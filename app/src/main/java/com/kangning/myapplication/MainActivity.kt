@@ -28,10 +28,10 @@ class MainActivity : AppCompatActivity() {
             beans.add(Bean(edit_text.text.toString()))
             edit_text.setText("")
 
-            RecoveryWorker.save(this)
+            RecoveryWorker.save(this, "OP")
         }
 
-        RecoveryWorker.check(this, this::class.qualifiedName!!) {
+        RecoveryWorker.check(this, this::class.qualifiedName!!+"OP") {
             if (!it) {
                 Toast.makeText(this, "nono", Toast.LENGTH_LONG).show()
             } else {
@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        RecoveryWorker.recover(this) {
+        RecoveryWorker.recover(this, "OP") {
             text.text = json + beans.toString()
         }
 
