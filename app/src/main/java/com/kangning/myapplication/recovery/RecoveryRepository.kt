@@ -17,15 +17,17 @@ class RecoveryRepository {
 //        mAllWords = mRecoveryDao.getAllWords()
     }
 
-    fun getRecoveryItem(className: String):RecoveryEntity {
+    fun getRecoveryItem(className: String): RecoveryEntity {
         return mRecoveryDao.getRecovery(className)
     }
 
 
     fun insert(item: RecoveryEntity) {
-        launch {
-            mRecoveryDao.insert(item)
-        }
+        mRecoveryDao.insert(item)
+    }
+
+    fun deleteRecoveryItem(className: String) {
+        mRecoveryDao.deleteRecovery(className)
     }
 
 }

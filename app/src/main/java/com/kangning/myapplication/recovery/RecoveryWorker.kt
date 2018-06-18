@@ -1,57 +1,60 @@
 package com.kangning.myapplication.recovery
 
 import android.app.Activity
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.withContext
-import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.isAccessible
 
 object RecoveryWorker {
 
-    fun recover(activity: Activity, func: (String) -> Unit) {
+    fun recover(activity: Activity, func: () -> Unit) {
         launch(CommonPool) {
             val content = RecoveryRepository(activity.application).getRecoveryItem(
                     activity::class.qualifiedName!!
             )
+            if (content != null) {
+                val clazz = activity::class
+                val map = Gson().fromJson<HashMap<String, Any?>>(content.jsonString,
+                        object : TypeToken<HashMap<String, Any?>>() {}.type)
+                clazz.declaredMemberProperties.forEach { prop ->
+                    val mutableProp = try {
+                        prop as KMutableProperty<*>
+                    } catch (e: Exception) {
+                        null
+                    } ?: return@forEach
 
-            val clazz = activity::class
-            val map = Gson().fromJson<HashMap<String, Any?>>(content.jsonString,
-                    object : TypeToken<HashMap<String, Any?>>() {}.type)
-            clazz.declaredMemberProperties.forEach { prop ->
-                val mutableProp = try {
-                    prop as KMutableProperty<*>
-                } catch (e: Exception) {
-                    null
-                } ?: return@forEach
+                    val annotation = mutableProp.findAnnotation<BindRelation>()
+                    if (annotation != null) {
+                        when (annotation.clazz) {
+                            String::class -> {
+                                mutableProp.isAccessible = true
+                                mutableProp.setter.call(activity, map[mutableProp.name])
+                            }
 
-                val annotation = mutableProp.findAnnotation<BindRelation>()
-                if (annotation != null) {
-                    when (annotation.clazz) {
-                        String::class -> {
-                            mutableProp.isAccessible = true
-                            mutableProp.setter.call(activity, map[mutableProp.name])
-                        }
-
-                        else -> {
+                            else -> {
 //                            map[prop.name] = List::class.cast(prop.getter.call(activity))
-                            mutableProp.isAccessible = true
-                            mutableProp.setter.call(activity, List::class.cast(map[mutableProp.name]))
+                                mutableProp.isAccessible = true
+                                mutableProp.setter.call(activity, List::class.cast(map[mutableProp.name]))
+                            }
+
                         }
 
                     }
-
                 }
-            }
 
-            withContext(UI) {
-                func(content.jsonString)
+                withContext(UI) {
+                    func()
+                }
+
+                RecoveryRepository(activity.application).deleteRecoveryItem(
+                        activity::class.qualifiedName!!)
+
             }
 
         }
@@ -64,6 +67,15 @@ object RecoveryWorker {
                             generateJson(activity)
                     )
             )
+        }
+    }
+
+    fun check(activity: Activity, className: String, func: (Boolean) -> Unit) {
+        launch(CommonPool) {
+            val recoverable = RecoveryRepository(activity.application).getRecoveryItem(className) != null
+            withContext(UI) {
+                func(recoverable)
+            }
         }
     }
 
@@ -95,15 +107,4 @@ object RecoveryWorker {
         }
         return Gson().toJson(map)
     }
-}
-
-data class RecoverCell(
-        val type: RecoveryType,
-        val gson: String,
-        val clazz: KClass<Any>
-)
-
-sealed class RecoveryType {
-    class JustRecord : RecoveryType()
-    class ForRecovery : RecoveryType()
 }
